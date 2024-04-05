@@ -39,12 +39,17 @@
         socket.onerror = function(e) {
             console.error('Errore WebSocket', e);
         }; 
+
+
         socket.onmessage = function(event) {
-            // OK console.log('Messaggio dal server:', event.data); 
-            // OK videoFrame.src = 'data:image/jpeg;base64,' + event.data; //event.url???
             console.log(event);
             const urlObject = URL.createObjectURL(event.data);
             videoFrame.src = urlObject; 
+
+            // Rilascia l'URL del framre precedente
+            videoFrame.onload = () => {
+                URL.revokeObjectURL(videoFrame.src);
+            };
         };
     </script>
 </body>
