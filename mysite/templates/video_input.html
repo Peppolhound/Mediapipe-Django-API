@@ -28,21 +28,23 @@
 </head>
 <body>
     <h2>Video Stream</h2>
-    <video id="videoElement" autoplay playsinline></video>
+    <img id="videoFrame" autoplay playsinline></video>
     <script type="text/javascript">
-        var videoElement = document.getElementById('videoElement');
-        var socket = new WebSocket('ws://' + window.location.host + '/ws/video/');
-        {% comment %} socket.onmessage = function(event) {
-            const message = JSON.parse(event.data);
-            console.log('Messaggio dal server:', message);
-            videoElement.src = 'data:image/jpeg;base64,' + message.data;
-        }; {% endcomment %}
+        const videoFrame = document.getElementById('videoFrame');
+        const socket = new WebSocket('ws://' + window.location.host + '/ws/video/');
+        socket.binaryType = 'blob';
         socket.onopen = function(e) {
             console.log('Connessione WebSocket aperta', e);
         };
-        
         socket.onerror = function(e) {
             console.error('Errore WebSocket', e);
+        }; 
+        socket.onmessage = function(event) {
+            // OK console.log('Messaggio dal server:', event.data); 
+            // OK videoFrame.src = 'data:image/jpeg;base64,' + event.data; //event.url???
+            console.log(event);
+            const urlObject = URL.createObjectURL(event.data);
+            videoFrame.src = urlObject; 
         };
     </script>
 </body>

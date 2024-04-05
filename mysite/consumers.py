@@ -1,42 +1,30 @@
-# from channels.generic.websocket import AsyncWebsocketConsumer
-# import cv2
-# import base64
-# import asyncio
-# from .camera import VideoCamera
-
-# class VideoStreamConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         await self.accept()
-        
-#         # Crea un'istanza di VideoCamera
-#         self.camera = VideoCamera()
-        
-#         # Inizia a trasmettere i frame video al client
-#         while True:
-#             frame = self.camera.get_frame()
-#             # Codifica il frame in base64 per trasmetterlo come stringa
-#             encoded_frame = base64.b64encode(frame).decode('utf-8')
-#             await self.send(text_data=encoded_frame)
-#             # await asyncio.sleep(0.1)  # Regola questo valore in base alla frequenza dei frame desiderata
-
-#     async def disconnect(self, close_code):
-#         print('Disconneted')
-
-# consumers.py
-import base64
 import cv2
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .camera import VideoCamera
-
+import asyncio
+import base64
 
 class VideoStreamConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        self.camera = VideoCamera()
-        # Assumendo che hai una funzione che ti dà i frame della webcam...
+        # Avvia un loop che invia i frame della videocamera al client
+        asyncio.get_event_loop().create_task(self.stream_video())
+
+    async def disconnect(self, close_code):
+        # Gestione per la fine della cattura da
+        pass
+
+    async def stream_video(self):
+        # Inizializza la cattura video
+        cap = cv2.VideoCapture(0)
         while True:
-            frame = self.camera.get_frame() # Ottieni il frame come array NumPy
-            _, buffer = cv2.imencode('.jpg', frame)
-            frame_base64 = base64.b64encode(buffer).decode('utf-8')
-            await self.send(text_data=frame_base64)
-            
+            ret, frame = cap.read()
+            if not ret:
+                break
+            # Converte il frame in JPEG
+            ret, jpeg = cv2.imencode('.jpg', frame)
+            # Invia i dati convertiti in byte
+            await self.send(bytes_data=jpeg.tobytes())
+            # Aspetta prima di inviare il prossimo frame (regolare in base al frame rate)
+            await asyncio.sleep(0) 
+        # Rilascia la cattura alla fine del loop
+        cap.release()
