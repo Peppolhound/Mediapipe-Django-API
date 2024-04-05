@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% comment %} {% extends 'base.html' %}
 
 {% block content %}
     <html>
@@ -18,4 +18,32 @@
             </button>
         </body>
     </html>
-{% endblock %}
+{% endblock %} {% endcomment %}
+
+<!-- video_input.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Stream</title>
+</head>
+<body>
+    <h2>Video Stream</h2>
+    <video id="videoElement" autoplay playsinline></video>
+    <script type="text/javascript">
+        var videoElement = document.getElementById('videoElement');
+        var socket = new WebSocket('ws://' + window.location.host + '/ws/video/');
+        {% comment %} socket.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            console.log('Messaggio dal server:', message);
+            videoElement.src = 'data:image/jpeg;base64,' + message.data;
+        }; {% endcomment %}
+        socket.onopen = function(e) {
+            console.log('Connessione WebSocket aperta', e);
+        };
+        
+        socket.onerror = function(e) {
+            console.error('Errore WebSocket', e);
+        };
+    </script>
+</body>
+</html>
