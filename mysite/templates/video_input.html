@@ -33,24 +33,24 @@
         const videoFrame = document.getElementById('videoFrame');
         const socket = new WebSocket('ws://' + window.location.host + '/ws/video/');
         socket.binaryType = 'blob';
+
         socket.onopen = function(e) {
             console.log('Connessione WebSocket aperta', e);
         };
         socket.onerror = function(e) {
             console.error('Errore WebSocket', e);
         }; 
-
-
         socket.onmessage = function(event) {
             console.log(event);
             const urlObject = URL.createObjectURL(event.data);
             videoFrame.src = urlObject; 
 
-            // Rilascia l'URL del framre precedente
+            // Rilascia l'URL del frame precedente
             videoFrame.onload = () => {
                 URL.revokeObjectURL(videoFrame.src);
             };
         };
+
     </script>
 </body>
 </html>

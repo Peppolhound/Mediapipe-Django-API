@@ -1,44 +1,59 @@
 import cv2
 import mediapipe as mp
+import subprocess
 import os
 
-# import sys
 
-def hand_detection(image_path):
-  mp_drawing = mp.solutions.drawing_utils
-  mp_hands = mp.solutions.hands
+def hand_detection(video_path):
+    # Setting algoritmo MediaPipe
+    mp_drawing = mp.solutions.drawing_utils
+    mp_hands = mp.solutions.hands
 
-  # For static images:
-  hands = mp_hands.Hands(
-      static_image_mode=True,
-      max_num_hands=2,
-      min_detection_confidence=0.5)
-  # Read an image, flip it around y-axis for correct handedness output (see
-  # above).
-  idx = 0
-  image = cv2.flip(image_path, 1)
-  # Convert the BGR image to RGB before processing.
-  results = hands.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-
-  # Print handedness and draw hand landmarks on the image.
-  # print('Handedness:', results.multi_handedness)
-  if not results.multi_hand_landmarks:
-    print("WARNING: This image has no hand(s)!!!")
-  else:
-    image_hight, image_width, _ = image.shape
-    annotated_image = image.copy()
-    for hand_landmarks in results.multi_hand_landmarks:
-      # print('hand_landmarks:', hand_landmarks)
-      # print(
-      #     f'Index finger tip coordinates: (',
-      #     f'{hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x * image_width}, '
-      #     f'{hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y * image_hight})'
-      # )
-      mp_drawing.draw_landmarks(
-          annotated_image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+    hands = mp_hands.Hands(
+        static_image_mode = False,
+        max_num_hands = 2,
+        min_detection_confidence = 0.5, 
+        min_tracking_confidence = 0.5)
     
-    # output_relative_path = '/tmp/annotated_image/' + str(idx) + '.png'
-    # cv2.imwrite(output_relative_path, cv2.flip(annotated_image, 1))
-  hands.close()
+    # Pre-processing: rimozione audio dal video
+    temp_path = 'media/video_temp.mp4'
+    command = ['ffmpeg', '-i', video_path, '-c:v', 'copy', '-an', temp_path]
+    subprocess.run(command)
+    print("Pre-processing terminato")
 
-  return cv2.flip(annotated_image, 1)
+    # Lettura video
+    cap = cv2.VideoCapture(temp_path)
+    if not cap.isOpened():
+        print("ERRORE: impossibile aprire il video")
+
+    while cap.isOpened():
+        # Lettura frame
+        ret, frame = cap.read()
+        if not ret: 
+            print("Fine del video o errore nella lettura del frame")
+            break
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Processing con algoritmo MediaPipe
+        results = hands.process(frame_rgb)
+        
+        # Disegno skeleton
+        if results.multi_hand_landmarks: 
+            for hand_landmark in results.multi_hand_landmarks: 
+                mp_drawing.draw_landmarks(
+                    frame, hand_landmark, mp_hands.HAND_CONNECTIONS,
+                    mp_drawing.DrawingSpec(color=(0,0,255), thickness=2, circle_radius=2),
+                    mp_drawing.DrawingSpec(color=(0,255,0), thickness=2, circle_radius=2))
+        else: 
+            print("Mani non identificate")
+        
+        # cv2.imshow("Frame", frame)
+
+        # if cv2.waitKey(1) & 0XFF == ord('q'):
+        #   break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+    hands.close()
+    # Eliminazione file temporaneo (video senza audio)
+    os.remove(temp_path)
