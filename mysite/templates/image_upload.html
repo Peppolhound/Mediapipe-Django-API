@@ -4,11 +4,31 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Upload</button>
+        <button type="submit">Carica</button>
     </form>
+    <h3>Immagine Elaborata:</h3>
+    <img id="immagineElaborata" src="" alt="Immagine elaborata verrà mostrata qui" style="max-height:600px">
     
-    {% if img_obj %}
-        <h3>Succesfully uploaded : {{img_obj.title}}</h3>
-        <img src="{{ img_obj.image.url}}" alt="connect" style="max-height:600px">
-    {% endif %}
+    <script>
+        function caricaImmagineElaborata() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    // Imposta l'URL dell'immagine elaborata come sorgente dell'elemento <img>
+                    var url = window.URL.createObjectURL(this.response);
+                    document.getElementById("immagineElaborata").src = url;
+                }
+            };
+            xhttp.open("GET", "/path/to/servire_frame_elaborato/", true);
+            xhttp.responseType = 'blob';
+            xhttp.send();
+        }
+        
+        // Carica l'immagine appena la pagina è completamente caricata
+        window.onload = caricaImmagineElaborata;
+    </script>
+    {% comment %} {% if img_obj %}
+        <h3>Video caricato correttamente{{img_obj.title}}</h3>
+        <img src="{{img_obj.image.url}}" alt="connect" style="max-height:600px"> {% endcomment %}
+    {% comment %} {% endif %} {% endcomment %}
 {% endblock %}

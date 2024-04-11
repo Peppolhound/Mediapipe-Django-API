@@ -1,7 +1,10 @@
 import cv2
 import mediapipe as mp
 import subprocess
+from io import BytesIO
+import base64
 import os
+
 
 
 def hand_detection(video_path):
@@ -16,7 +19,7 @@ def hand_detection(video_path):
         min_tracking_confidence = 0.5)
     
     # Pre-processing: rimozione audio dal video
-    temp_path = 'media/video_temp.mp4'
+    temp_path = 'video_temp.mp4'
     command = ['ffmpeg', '-i', video_path, '-c:v', 'copy', '-an', temp_path]
     subprocess.run(command)
     print("Pre-processing terminato")
@@ -51,9 +54,13 @@ def hand_detection(video_path):
 
         # if cv2.waitKey(1) & 0XFF == ord('q'):
         #   break
+        return frame
+    else:
+        pass
     
     cap.release()
     cv2.destroyAllWindows()
     hands.close()
     # Eliminazione file temporaneo (video senza audio)
-    os.remove(temp_path)
+    if(os.path.isfile(temp_path)):
+        os.remove(temp_path)
