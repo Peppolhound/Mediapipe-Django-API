@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Carica Video{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Carica Video</h2>
+  <form action="" method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    
+    <div class="form-group">
+      {{ form.video.label(class="form-control-label") }}
+      {{ form.video(class="form-control-file") }}
+      {% if form.video.errors %}
+        {% for error in form.video.errors %}
+          <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Carica</button>
+  </form>
+</div>
+{% endblock %}
