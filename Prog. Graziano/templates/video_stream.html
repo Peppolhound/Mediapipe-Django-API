@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Language Detection</title>
-</head>
-<body>
-    <h1> prova  riconoscimento mano </h1>
-    <img src="{{ url_for('video_feed') }}" alt="Sign Language Detection">
-</body>
-</html>
+{% extends "base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<title>Video Stream </title>
+{% endblock %}
+{% block content %}
+<h1>Video Stream</h1>
+<img name="img-stream" src="{{ url_for('video_feed') }}" alt="Sign Language Detection">
+<a id="stopButton" class="btn btn-primary" href="/">Stop Stream</a> 
+{% endblock %}
