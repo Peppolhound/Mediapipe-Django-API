@@ -1,11 +1,8 @@
 {% extends "base.html" %}
-
-{% block title %}Visualizza Video{% endblock %}
-
+{% block head %}
+<title>Video Upload</title>
+{% endblock %}
 {% block content %}
-<div class="container">
-  <video controls src="{{ video_url }}" style="max-width: 100%;">
-    Il tuo browser non supporta il tag video.
-  </video>
-</div>
+<h1>Video</h1>
+<img name="img-stream" src="{{ url_for('video_upload') }}" alt="Sign Language Detection">
 {% endblock %}

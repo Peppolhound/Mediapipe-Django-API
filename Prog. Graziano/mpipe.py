@@ -44,8 +44,11 @@ def detect_sign_language(frame):
     return frame
 
 # Function to generate video frames
-def generate_frames():
-    camera = cv2.VideoCapture(0)
+def generate_frames(filename=None):
+    if filename is not None:
+        camera = cv2.VideoCapture(filename)
+    else: 
+        camera = cv2.VideoCapture(0)
     while True:
         success, frame = camera.read()
         if not success:
@@ -57,18 +60,18 @@ def generate_frames():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-
 # Release resources
 pose.close()
 
 # Route for the video feed
 @app.route('/video_feed')
 def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(filename=None), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # Route for show video
 @app.route('/video_input')
 def video_input():
+    session['streaming'] = True
     return render_template('video_stream.html')
 
 # Route for video upload
@@ -80,23 +83,29 @@ def video_upload():
         video_file = form.video.data
         filename = secure_filename(video_file.filename)
         # Save file in media folder
-        video_path = os.path.join('static/videos/', filename)
-        video_file.save(video_path)
+        # video_path = os.path.join('static/videos/', filename)
+        # video_file.save(video_path)
 
         # Process video
-        ### 
+        return Response(generate_frames(filename=filename), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-        # Get video url
-        video_url = url_for('static', filename= f'videos/{filename}')
-        return render_template('view_video.html', video_url=video_url)
-        # return redirect(url_for('view_video'))
-    # Redirect user
+    #     # Get video url
+    #     video_url = url_for('static', filename= f'videos/{filename}')
+    #     return render_template('view_video.html', video_url=video_url)
+    #     # return redirect(url_for('view_video'))
+    # # Redirect user
     return render_template('video_upload.html', form=form)
+
+# Route for show video
+@app.route('/video_upload_input')
+def video_upload_input():
+    return render_template('view_video.html')
 
 # Route for the main page
 @app.route('/')
 def index():
     camera.release()
+    session['streaming'] = False
     return render_template('home.html')
 
 if __name__ == '__main__':

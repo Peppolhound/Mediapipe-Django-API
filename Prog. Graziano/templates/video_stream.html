@@ -5,6 +5,43 @@
 {% endblock %}
 {% block content %}
 <h1>Video Stream</h1>
-<img name="img-stream" src="{{ url_for('video_feed') }}" alt="Sign Language Detection">
+
+<label for="angleOptions"> Seleziona l'angolo da analizzare </label>
+<select id="angleOptions" required onchange="saveSelection(this.value)">
+    <option disabled selected value> -- </option>
+    <option value="right-shoulder"> Spalla destra </option>
+    <option value="left-shoulder"> Spalla sinistra </option>
+    <option value="right-elbow"> Gomito destro </option>
+    <option value="left-elbow"> Gomito sinistro </option>
+    <option value="right-knee"> Ginocchio destro </option>
+    <option value="left-knee"> Ginocchio sinistro </option>
+</select>
+
+<a id="startButton" class="btn btn-primary" onclick="startStreaming()">Avvia Stream</a> 
 <a id="stopButton" class="btn btn-primary" href="/">Stop Stream</a> 
+<img id="imgStream" src="">
+
+<script>
+function saveSelection(value) {
+    localStorage.setItem("selectedAngle", value);
+}
+
+function startStreaming() {
+    var angleChoice = document.getElementById('angleOptions');
+    var imgStream = document.getElementById('imgStream');
+    angleChoice = angleChoice.value;
+    console.log(angleChoice)
+
+    if (angleChoice)
+    {
+        imgStream.src = "{{ url_for('video_feed') }}"
+        console.log("ok angle")
+    } else {
+        alert("Selezionare un'opzione prima di avviare lo stream");
+        console.log("no angle")
+    }
+}
+</script>
+
+
 {% endblock %}
