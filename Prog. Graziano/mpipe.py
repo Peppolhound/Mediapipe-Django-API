@@ -25,8 +25,8 @@ class VideoUploadForm(FlaskForm):
     video = FileField('Video', validators=[FileRequired()])
     submit = SubmitField('Upload')
 
-# Function to process frames and detect hand landmarks
-def detect_sign_language(frame):
+# Function to process frames and detect landmarks
+def process_frames(frame):
     # Convert BGR to RGB
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     # Process the frame
@@ -54,11 +54,36 @@ def generate_frames(filename=None):
         if not success:
             break
         else:
-            frame = detect_sign_language(frame)  # Use the function from Step 1
+            frame = process_frames(frame)  # Use the function from Step 1
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+# Select landmarks index after angle is choose from drop-list // https://www.researchgate.net/publication/376877613/figure/fig3/AS:11431281214749048@1703775353673/MediaPipes-33-key-points-29.ppm
+def select_landmarks(selected_angle):
+    if selected_angle == "right-shoulder":
+        idxs = [14, 12, 24]
+    elif selected_angle == "left-shoulder":
+        idxs = [13, 11, 23]
+    elif selected_angle == "right-elbow":
+        idxs = [12, 14, 16]
+    elif selected_angle == "left-elbow":
+        idxs = [11, 13, 15]
+    elif selected_angle == "right-knee":
+        idxs = [24, 26, 28]
+    elif selected_angle == "left-knee":
+        idxs = [23, 25, 27]
+    else:
+        pass
+    return idxs 
+
+# Function to evaluate body angles, according to the angle choosen by drop-list
+# def evaluate_angle(idxs):
+    a = 
+
+
+
 
 # Release resources
 pose.close()
@@ -69,9 +94,15 @@ def video_feed():
     return Response(generate_frames(filename=None), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # Route for show video
-@app.route('/video_input')
+@app.route('/video_input', methods=['GET','POST'])
 def video_input():
     session['streaming'] = True
+    selected_angle = request.form.get('angle')
+    if selected_angle:
+        idxs = select_landmarks(selected_angle)
+        # evaluate_angle(idxs)
+    else:
+        pass
     return render_template('video_stream.html')
 
 # Route for video upload
